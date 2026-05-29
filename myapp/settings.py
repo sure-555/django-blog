@@ -100,9 +100,12 @@ WSGI_APPLICATION = 'myapp.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-if os.environ.get("DATABASE_URL"):
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+# This explicitly checks that DATABASE_URL exists and is NOT an empty string
+if DATABASE_URL and DATABASE_URL.strip():
     DATABASES = {
-        'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
+        'default': dj_database_url.parse(DATABASE_URL)
     }
 else:
     DATABASES = {
