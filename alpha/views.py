@@ -16,6 +16,7 @@ from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required,permission_required
 from django.contrib.auth.models import Group
+from django.core.exceptions import PermissionDenied
 
 def index(request):
     project="ALPHA"
@@ -24,13 +25,21 @@ def index(request):
     page_number=request.GET.get('page')
     page_object=paginator.get_page(page_number)
     return render(request,'index.html',{'name':project,'page_obj':page_object})
-
 def about(request):
     if request.user and not request.user.has_perm('alpha.view_post'):
-        messages.error(request,'You have no permission to view any post')
+        messages.error(request, 'You have no permission to view any post')
         return redirect('alpha:index')
-    content=AboutUs.objects.first().content
-    return render(request,'about.html',{'content':content})
+    
+    # Safely get the first record object
+    about_record = AboutUs.objects.first()
+    
+    # If the database has content, grab it; otherwise, display a friendly fallback string
+    if about_record:
+        content = about_record.content
+    else:
+        content = "About Us content is currently being updated."
+        
+    return render(request, 'about.html', {'content': content})
 
 def post(request,slug):
     #by the post list
@@ -132,40 +141,76 @@ def reset_password(request,uidb64,token):
 
     return render(request,'reset_password.html',{'form':form})
 
+
 @login_required
-@permission_required('alpha.add_post',raise_exception=True)
 def new_post(request):
-    form=PostForm()
-    category=Category.objects.all()
-    if request.method =='POST':
-        form=PostForm(request.POST,request.FILES)
+    # Check if user is in the 'Readers' group or has explicit permission to add
+    is_reader = request.user.groups.filter(name='Readers').exists()
+    has_perm = request.user.has_perm('alpha.add_post')
+    
+    if not (is_reader or has_perm):
+        raise PermissionDenied  # Or use messages.error and redirect
+        
+    category = Category.objects.all()
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES)
         if form.is_valid():
-            post=form.save()
-            post.user=request.user
+            # commit=False prevents database crash before assigning the author
+            post = form.save(commit=False)
+            post.user = request.user
             post.save()
+            messages.success(request, 'Post created successfully!')
             return redirect('alpha:dashboard')
-    return render(request,'new_post.html',{'categories':category,'form':form})
+    else:
+        form = PostForm()
+        
+    return render(request, 'new_post.html', {'categories': category, 'form': form})
+
 
 @login_required
-def edit_post(request,post_id):
-    form=PostForm()
-    category=Category.objects.all()
-    post=get_object_or_404(Post,id=post_id)
-    if request.method =='POST':
-        form=PostForm(request.POST,request.FILES,instance=post)
+def edit_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    
+    # CRITICAL SECURITY: Only allow the author or a superuser to edit this post
+    if post.user != request.user and not request.user.is_superuser:
+        raise PermissionDenied
+        
+    category = Category.objects.all()
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES, instance=post)
         if form.is_valid():
-            post=form.save()
+            form.save()
+            messages.success(request, 'Post updated successfully!')
             return redirect('alpha:dashboard')
-    return render(request,'edit_post.html',{'categories':category,'post':post,'form':form})
+    else:
+        # Pass the instance to the form so existing content shows up on load
+        form = PostForm(instance=post)
+        
+    return render(request, 'edit_post.html', {'categories': category, 'post': post, 'form': form})
+
 
 @login_required
-def delete_post(request,post_id):
-    post=get_object_or_404(Post,id=post_id)
+def delete_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    
+    # CRITICAL SECURITY: Only allow the author or a superuser to delete this post
+    if post.user != request.user and not request.user.is_superuser:
+        raise PermissionDenied
+        
     post.delete()
+    messages.success(request, 'Post deleted successfully.')
     return redirect('alpha:dashboard')
 
-def publish_post(request,post_id):
-    post=get_object_or_404(Post,id=post_id)
-    post.is_piublished=True
+
+@login_required  # Added missing login protection
+def publish_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    
+    # CRITICAL SECURITY: Only allow the author or a superuser to publish this post
+    if post.user != request.user and not request.user.is_superuser:
+        raise PermissionDenied
+        
+    post.is_published = True  # Corrected a minor typo from 'is_piublished'
     post.save()
+    messages.success(request, 'Post published successfully!')
     return redirect('alpha:dashboard')
