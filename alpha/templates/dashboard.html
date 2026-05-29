@@ -8,23 +8,15 @@
           <div class="col d-flex justify-content-end">
               <div>
                   <h2>Your Groups:</h2>
-                  <ul>
-                    {% for group in user.groups.all %}
-                      <li>{{group.name}}</li>
-                    {% empty %}
-                      <li>You are not a member of any groups.</li>
-                    {% endfor %}
-                  </ul>
+                 
               </div>
           </div>
         </div>
         
         <div class="row">
-            {% if perms.alpha.add_post %}
             <div class="d-flex justify-content-center">
                   <a href="{%url 'alpha:new_post' %}" class="btn btn-success">New Post</a>
             </div>
-          {% endif %}
           
         </div>
         
