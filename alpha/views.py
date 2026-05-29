@@ -144,20 +144,19 @@ def reset_password(request,uidb64,token):
 
 @login_required
 def new_post(request):
-    # Check if user is in the 'Readers' group or has explicit permission to add
+    # Allow access if user is a Reader OR has explicit Django permissions
     is_reader = request.user.groups.filter(name='Readers').exists()
     has_perm = request.user.has_perm('alpha.add_post')
     
     if not (is_reader or has_perm):
-        raise PermissionDenied  # Or use messages.error and redirect
+        raise PermissionDenied  
         
     category = Category.objects.all()
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
-            # commit=False prevents database crash before assigning the author
             post = form.save(commit=False)
-            post.user = request.user
+            post.user = request.user  # Assign the current logged-in user as the author
             post.save()
             messages.success(request, 'Post created successfully!')
             return redirect('alpha:dashboard')
@@ -171,7 +170,7 @@ def new_post(request):
 def edit_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     
-    # CRITICAL SECURITY: Only allow the author or a superuser to edit this post
+    # OWNERSHIP SECURITY: Only allow the author or a superuser to edit
     if post.user != request.user and not request.user.is_superuser:
         raise PermissionDenied
         
@@ -183,7 +182,6 @@ def edit_post(request, post_id):
             messages.success(request, 'Post updated successfully!')
             return redirect('alpha:dashboard')
     else:
-        # Pass the instance to the form so existing content shows up on load
         form = PostForm(instance=post)
         
     return render(request, 'edit_post.html', {'categories': category, 'post': post, 'form': form})
@@ -193,7 +191,7 @@ def edit_post(request, post_id):
 def delete_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     
-    # CRITICAL SECURITY: Only allow the author or a superuser to delete this post
+    # OWNERSHIP SECURITY: Only allow the author or a superuser to delete
     if post.user != request.user and not request.user.is_superuser:
         raise PermissionDenied
         
@@ -202,15 +200,15 @@ def delete_post(request, post_id):
     return redirect('alpha:dashboard')
 
 
-@login_required  # Added missing login protection
+@login_required
 def publish_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     
-    # CRITICAL SECURITY: Only allow the author or a superuser to publish this post
+    # OWNERSHIP SECURITY: Only allow the author or a superuser to publish
     if post.user != request.user and not request.user.is_superuser:
         raise PermissionDenied
         
-    post.is_published = True  # Corrected a minor typo from 'is_piublished'
+    post.is_published = True  # Corrected typo from your original 'is_piublished'
     post.save()
     messages.success(request, 'Post published successfully!')
     return redirect('alpha:dashboard')
