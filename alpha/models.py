@@ -22,7 +22,7 @@ class Post(models.Model):
     # 2. Make sure blank=True is added here so Django knows a blank form submission is allowed
     slug = models.SlugField(max_length=200, unique=True, blank=True) 
     
-    is_piublished = models.BooleanField(default=True)
+    is_piublished = models.BooleanField(default=False)
     created_at = models.DateField(auto_now_add=True)
 
     # 3. ADD THIS EXACT METHOD INSIDE THE POST CLASS
