@@ -19,12 +19,32 @@ from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 
 def index(request):
-    project="ALPHA"
-    all_posts = Post.objects.filter(is_piublished=True)
-    paginator=Paginator(all_posts,6)
-    page_number=request.GET.get('page')
-    page_object=paginator.get_page(page_number)
-    return render(request,'index.html',{'name':project,'page_obj':page_object})
+    project = "ALPHA"
+    
+    # 1. Grab all published posts
+    all_posts = Post.objects.filter(is_piublished=True).order_by('-created_at')
+    
+    # 2. Extract the search keyword from the homepage input box
+    search_query = request.GET.get('search')
+    if search_query:
+        # Filters titles containing the searched words, ignoring case differences
+        all_posts = all_posts.filter(title__icontains=search_query)
+    
+    # 3. Pass the (potentially filtered) posts into your paginator
+    paginator = Paginator(all_posts, 6)
+    page_number = request.GET.get('page')
+    page_object = paginator.get_page(page_number)
+    
+    # 4. Pass the search_query to the template context so the input field can reference it
+    context = {
+        'name': project,
+        'page_obj': page_object,
+        'search_query': search_query
+    }
+    
+    return render(request, 'index.html', context)
+
+
 def about(request):
     if request.user and not request.user.has_perm('alpha.view_post'):
         messages.error(request, 'You have no permission to view any post')
