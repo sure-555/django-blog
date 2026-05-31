@@ -144,7 +144,6 @@ def reset_password(request,uidb64,token):
 
 @login_required
 def new_post(request):
-    # Allow access if user is a Reader OR has explicit Django permissions
     is_reader = request.user.groups.filter(name='Readers').exists()
     has_perm = request.user.has_perm('alpha.add_post')
     
@@ -156,7 +155,15 @@ def new_post(request):
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
-            post.user = request.user  # Assign the current logged-in user as the author
+            post.user = request.user
+            
+            # --- BINARY IMAGE CONVERSION LOGIC ---
+            if 'image' in request.FILES:
+                uploaded_file = request.FILES['image']
+                post.image_data = uploaded_file.read()  # Read raw file bytes
+                post.image_mime_type = uploaded_file.content_type  # Save file type (PNG/JPEG)
+            # --------------------------------------
+            
             post.save()
             messages.success(request, 'Post created successfully!')
             return redirect('alpha:dashboard')
@@ -164,8 +171,6 @@ def new_post(request):
         form = PostForm()
         
     return render(request, 'new_post.html', {'categories': category, 'form': form})
-
-
 @login_required
 def edit_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
@@ -178,15 +183,23 @@ def edit_post(request, post_id):
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES, instance=post)
         if form.is_valid():
-            form.save()
+            # Don't save to the database immediately
+            updated_post = form.save(commit=False)
+            
+            # --- BINARY IMAGE CONVERSION FOR EDITING ---
+            if 'image' in request.FILES:
+                uploaded_file = request.FILES['image']
+                updated_post.image_data = uploaded_file.read()  # Read new file bytes
+                updated_post.image_mime_type = uploaded_file.content_type  # Update file type
+            # --------------------------------------------
+            
+            updated_post.save()
             messages.success(request, 'Post updated successfully!')
             return redirect('alpha:dashboard')
     else:
         form = PostForm(instance=post)
         
     return render(request, 'edit_post.html', {'categories': category, 'post': post, 'form': form})
-
-
 @login_required
 def delete_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)

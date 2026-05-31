@@ -11,7 +11,8 @@ class Category(models.Model):
 class Post(models.Model):
     title=models.CharField(max_length=100)
     content=models.TextField()
-    image=models.ImageField(null=True,upload_to='posts/images')
+    image_data=models.BinaryField(null=True, blank=True)
+    image_mime_type = models.CharField(max_length=50, null=True, blank=True)
     created_at=models.DateField(auto_now_add=True)
     slug=models.SlugField(unique=True)
     category=models.ForeignKey(Category,on_delete=models.CASCADE)
