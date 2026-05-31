@@ -2,10 +2,13 @@ from django.contrib import admin
 from django import forms
 from .models import Post, Category, AboutUs
 
-
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('title', 'content')
+    # Added category and created_at columns for better visibility in the admin list view
+    list_display = ('title', 'category', 'created_at')
     search_fields = ('title', 'content')
+    
+    # This magic line automatically builds the slug in real-time as you type the title!
+    prepopulated_fields = {'slug': ('title',)}
 
 
 class AboutUsAdminForm(forms.ModelForm):

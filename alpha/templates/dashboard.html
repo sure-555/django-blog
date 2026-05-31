@@ -1,52 +1,63 @@
 {% include 'includes/header.html' %}
-    <div class="container-fluid ">
+<div class="container-fluid">
 
-        <div class="row">
-          <div class="col-6">
-              <h3> Hi, {{user.username}}.</h3>
-          </div>
-          <div class="col d-flex justify-content-end">
-              <div>
-                  
-              </div>
-          </div>
+    <div class="row">
+        <div class="col-6">
+            <h3>Hi, {{ user.username }}.</h3>
         </div>
-        
-        <div class="row">
-            <div class="d-flex justify-content-center">
-                  <a href="{%url 'alpha:new_post' %}" class="btn btn-success">New Post</a>
+        <div class="col d-flex justify-content-end">
+            <div>
+                <!-- Extra actions can go here -->
             </div>
-          
         </div>
-        
-        <div class="row m-3">
-            {% if page_obj %}
+    </div>
+    
+    <div class="row">
+        <div class="d-flex justify-content-center">
+            <a href="{% url 'alpha:new_post' %}" class="btn btn-success">New Post</a>
+        </div>
+    </div>
+    
+    <div class="row m-3">
+        {% if page_obj %}
             {% for post in page_obj %}
             <div class="col-4 mb-4">
-                <div class="card">
+                <div class="card h-100">
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <img style="height:300; width:300" src={{post.formatted_img_url}} class="img-fluid" alt="...">
-                            </div>
-                            <div class="col-md-8">
-                                <h5 class="card-title">{{post.title}}</h5>
-                                <p class="card-text">{{post.content | truncatechars:45}}</p>
-                                <div class="d-flex justify-content-between">
-                                     <a href="{% url 'alpha:post' slug=post.slug %}">Read More</a>
-                                    <a class="text-decoration-none text-dark fw-bold" href="#">{{post.category.name}}</a>
-                                </div>
-                                <div class="d-flex justify-content-between">
-                                <a class="btn btn-primary btn-sm mt-2" href="{% url 'alpha:edit_post' post_id=post.id %}">
-                                 <i class="bi bi-pencil"></i> Edit
-                                </a>
-                                <button class="btn btn-danger btn-sm mt-2" 
-                                        onclick="confirmBeforeDelete('{% url 'alpha:delete_post' post_id=post.id %}')">
-                                 <i class="bi bi-trash"></i> Delete
-                                </button>
-                                {% if not post.is_piublished %}
-                                <a href="{% url "alpha:publish_post" post_id=post.id %}"" class="btn btn-success btn-sm mt-2">Publish</a>
+                        <div class="row h-100 align-items-center">
+                            <!-- Image Section -->
+                            <div class="col-md-4 d-flex align-items-center justify-content-center">
+                                {% if post.image_base64 %}
+                                    <img style="height: 120px; width: 120px; object-fit: cover; border-radius: 8px;" src="{{ post.image_base64 }}" class="img-fluid" alt="{{ post.title }}">
+                                {% else %}
+                                    <div style="height: 120px; width: 120px; background-color: #e9ecef; border-radius: 8px;" class="d-flex align-items-center justify-content-center text-muted small">
+                                        No Image
+                                    </div>
                                 {% endif %}
+                            </div>
+                            
+                            <!-- Content Section -->
+                            <div class="col-md-8">
+                                <h5 class="card-title">{{ post.title }}</h5>
+                                <p class="card-text">{{ post.content|truncatechars:45 }}</p>
+                                <div class="d-flex justify-content-between">
+                                    {% if post.slug %}
+                                        <a href="{% url 'alpha:post' slug=post.slug %}">Read More</a>
+                                    {% else %}
+                                        <span class="text-danger small">No Slug</span>
+                                    {% endif %}
+                                    <a class="text-decoration-none text-dark fw-bold" href="#">{{ post.category.name }}</a>
+                                </div>
+                                <div class="d-flex justify-content-between flex-wrap">
+                                    <a class="btn btn-primary btn-sm mt-2" href="{% url 'alpha:edit_post' post_id=post.id %}">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </a>
+                                    <button class="btn btn-danger btn-sm mt-2" onclick="confirmBeforeDelete('{% url 'alpha:delete_post' post_id=post.id %}')">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                    {% if not post.is_piublished %}
+                                        <a href="{% url 'alpha:publish_post' post_id=post.id %}" class="btn btn-success btn-sm mt-2">Publish</a>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -54,23 +65,19 @@
                 </div>
             </div>
             {% endfor %}
-            {%else%}
+        {% else %}
             <p>No Posts Available</p>
-            {% endif %}
-
-        </div>
+        {% endif %}
     </div>
-    <script>
-        function confirmBeforeDelete(url){
-            var userConfirmed = confirm("Are you sure to delete?");
-            if(userConfirmed){
-                window.location.href= url;
-            }
+</div>
+
+<script>
+    function confirmBeforeDelete(url){
+        var userConfirmed = confirm("Are you sure to delete?");
+        if(userConfirmed){
+            window.location.href = url;
         }
-    </script>
+    }
+</script>
 
 {% include 'includes/footer.html' %}
-
-
-      
-    
