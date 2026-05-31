@@ -13,24 +13,31 @@ class Post(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()
     
-    # Only keep the binary database storage fields
     image_data = models.BinaryField(null=True, blank=True) 
     image_mime_type = models.CharField(max_length=50, null=True, blank=True)
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
-    slug = models.SlugField(max_length=200, unique=True)
+    
+    # 2. Make sure blank=True is added here so Django knows a blank form submission is allowed
+    slug = models.SlugField(max_length=200, unique=True, blank=True) 
+    
     is_piublished = models.BooleanField(default=True)
     created_at = models.DateField(auto_now_add=True)
 
+    # 3. ADD THIS EXACT METHOD INSIDE THE POST CLASS
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            # Converts "My Brand New Post!" into "my-brand-new-post" dynamically
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+
     @property
     def image_base64(self):
-        # Only evaluate the live binary data fields
         if self.image_data and self.image_mime_type:
             binary_as_string = base64.b64encode(self.image_data).decode('utf-8')
             return f"data:{self.image_mime_type};base64,{binary_as_string}"
         return None
-
 
 class AboutUs(models.Model):
     content=models.TextField()
