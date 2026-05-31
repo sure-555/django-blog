@@ -7,8 +7,7 @@
         </div>
         <div class="col d-flex justify-content-end">
             <div>
-                <!-- Extra actions can go here -->
-            </div>
+                </div>
         </div>
     </div>
     
@@ -25,7 +24,6 @@
                 <div class="card h-100">
                     <div class="card-body">
                         <div class="row h-100 align-items-center">
-                            <!-- Image Section -->
                             <div class="col-md-4 d-flex align-items-center justify-content-center">
                                 {% if post.image_base64 %}
                                     <img style="height: 120px; width: 120px; object-fit: cover; border-radius: 8px;" src="{{ post.image_base64 }}" class="img-fluid" alt="{{ post.title }}">
@@ -36,7 +34,6 @@
                                 {% endif %}
                             </div>
                             
-                            <!-- Content Section -->
                             <div class="col-md-8">
                                 <h5 class="card-title">{{ post.title }}</h5>
                                 <p class="card-text">{{ post.content|truncatechars:45 }}</p>
@@ -65,6 +62,43 @@
                 </div>
             </div>
             {% endfor %}
+
+            {% if page_obj.has_other_pages %}
+            <div class="row mt-4 w-100">
+                <div class="col-12 d-flex justify-content-center">
+                    <nav aria-label="Dashboard page navigation">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo; Previous</span>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><span class="page-link">&laquo; Previous</span></li>
+                            {% endif %}
+
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                </span>
+                            </li>
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                        <span aria-hidden="true">Next &raquo;</span>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            {% endif %}
+
         {% else %}
             <p>No Posts Available</p>
         {% endif %}
