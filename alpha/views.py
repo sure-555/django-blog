@@ -225,3 +225,14 @@ def publish_post(request, post_id):
     post.save()
     messages.success(request, 'Post published successfully!')
     return redirect('alpha:dashboard')   
+
+
+import base64
+
+# Inside your Post model:
+@property
+def image_base64(self):
+    if self.image_data and self.image_mime_type:
+        binary_as_string = base64.b64encode(self.image_data).decode('utf-8')
+        return f"data:{self.image_mime_type};base64,{binary_as_string}"
+    return None
