@@ -208,7 +208,7 @@ def publish_post(request, post_id):
     if post.user != request.user and not request.user.is_superuser:
         raise PermissionDenied
         
-    post.is_published = True  # Corrected typo from your original 'is_piublished'
+    post.is_piublished = True  # Corrected typo from your original 'is_piublished'
     post.save()
     messages.success(request, 'Post published successfully!')
-    return redirect('alpha:dashboard')
+    return redirect('alpha:dashboard')   
