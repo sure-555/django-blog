@@ -1,75 +1,104 @@
 {% include 'includes/header.html' %}
 
-<div class="container-fluid d-flex flex-column min-vh-100">
-    <div class="row my-2">
-        <div class="col">
-            <h2>Latest Posts</h2>
+<div class="container-fluid d-flex flex-column min-vh-100 bg-light px-4 px-md-5 py-4">
+    
+    <div class="row align-items-center mb-5 g-3">
+        <div class="col-12 col-md-8">
+            <h2 class="fw-bold text-dark m-0 tracking-tight" style="letter-spacing: -0.5px;">Latest Posts</h2>
+            <p class="text-muted small m-0 mt-1">Discover new ideas, insights, and stories directly out of our database vaults.</p>
         </div>
-        <div class="col-3">
-            <div class="input-group">
-                <input type="text" class="form-control" placeholder="Search..." aria-label="Search">
-                <button class="btn btn-outline-light btn-primary" type="button" id="button-search">
+        <div class="col-12 col-md-4">
+            <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                <input type="text" class="form-control border-0 py-2.5 px-3 fs-6" placeholder="Search articles..." aria-label="Search" style="background-color: #ffffff;">
+                <button class="btn btn-primary px-4 d-flex align-items-center" type="button" id="button-search">
                     <i class="bi bi-search"></i>
                 </button>
             </div>
         </div>
     </div>
 
-    <div class="row m-3 flex-grow-1 align-content-start">
+    <div class="row g-4 flex-grow-1 align-content-start">
         {% if page_obj %}
             {% for post in page_obj %}
-            <div class="col-4 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4 d-flex align-items-center">
-                                <img src="{{post.formatted_img_url}}" class="img-fluid rounded" alt="{{post.title}}">
+            <div class="col-12 col-md-6 col-lg-4 d-flex">
+                <div class="card border-0 w-100 shadow-sm rounded-4 overflow-hidden position-relative d-flex flex-column" 
+                     style="transition: transform 0.25s ease, box-shadow 0.25s ease; background: #ffffff;"
+                     onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.08)';"
+                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 0.125rem 0.25rem rgba(0,0,0,0.075)';">
+                    
+                    <div class="position-relative" style="height: 200px; overflow: hidden; background-color: #eaeaea;">
+                        {% if post.image_base64 %}
+                            <img src="{{ post.image_base64 }}" class="w-100 h-100 object-fit-cover" alt="{{ post.title }}" style="object-position: center;">
+                        {% else %}
+                            <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-muted bg-secondary bg-opacity-10">
+                                <i class="bi bi-image fs-2 mb-1"></i>
+                                <span class="small">No Cover Image</span>
                             </div>
-                            <div class="col-md-8">
-                                <h5 class="card-title">{{post.title}}</h5>
-                                <p class="card-text">{{post.content | truncatechars:45}}</p>
-                                <div class="d-flex justify-content-between">
-                                    <a href="{% url 'alpha:post' slug=post.slug %}">Read More</a>
-                                    <a class="text-decoration-none text-dark fw-bold" href="#">{{post.category.name}}</a>
-                                </div>
-                            </div>
+                        {% endif %}
+                        
+                        <span class="position-absolute top-0 end-0 bg-white text-dark fw-bold px-3 py-1.5 m-3 rounded-pill shadow-sm" style="font-size: 0.75rem; letter-spacing: 0.5px; border: 1px solid rgba(0,0,0,0.05);">
+                            {{ post.category.name }}
+                        </span>
+                    </div>
+
+                    <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                        <h5 class="card-title fw-bold text-dark mb-2 lh-base text-truncate" style="font-size: 1.15rem; max-width: 100%;">
+                            {{ post.title }}
+                        </h5>
+                        <p class="card-text text-muted small mb-4 lh-relaxed flex-grow-1">
+                            {{ post.content | truncatechars:90 }}
+                        </p>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top border-light">
+                            <a href="{% url 'alpha:post' slug=post.slug %}" class="btn btn-link p-0 text-primary fw-semibold text-decoration-none d-flex align-items-center gap-1 small">
+                                Read Article 
+                                <i class="bi bi-arrow-right" style="transition: transform 0.2s;" onmouseover="this.style.transform='translateX(3px)'" onmouseout="this.style.transform='translateX(0)'"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
             {% endfor %}
         {% else %}
-            <div class="col-12">
-                <p>No Posts Available</p>
+            <div class="col-12 text-center py-5 my-auto">
+                <i class="bi bi-journal-x text-muted display-3"></i>
+                <h4 class="fw-bold mt-3 text-dark">No Posts Found</h4>
+                <p class="text-muted small">Be the first to share an article with the community!</p>
             </div>
         {% endif %}
 
-        <div class="col-12 my-3">
+        <div class="col-12 my-5 pt-4">
             {% if page_obj.has_other_pages %}
-            <nav aria-label="Page navigation">
-                <ul class="pagination">
+            <nav aria-label="Page navigation" class="d-flex justify-content-center">
+                <ul class="pagination shadow-sm rounded-3 overflow-hidden border-0 m-0">
                     {% if page_obj.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page=1" aria-label="First">
-                            <span aria-hidden="true">&laquo; first</span>
+                        <a class="page-link border-0 px-3 py-2.5 bg-white text-dark" href="?page=1" aria-label="First">
+                            <i class="bi bi-chevron-double-left small"></i>
                         </a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{page_obj.previous_page_number}}" aria-label="Previous">
-                            <span aria-hidden="true">previous</span>
+                        <a class="page-link border-0 px-3 py-2.5 bg-white text-dark" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                            <i class="bi bi-chevron-left small"></i>
                         </a>
                     </li>
                     {% endif %}
-                    <li class="page-item"><span class="page-link">Page {{page_obj.number}} of {{page_obj.paginator.num_pages}}.</span></li>
+                    
+                    <li class="page-item disabled">
+                        <span class="page-link border-0 px-4 py-2.5 bg-white text-muted fw-medium fs-6" style="min-width: 160px; text-center;">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+                    
                     {% if page_obj.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{page_obj.next_page_number}}" aria-label="Next">
-                            <span aria-hidden="true">next</span>
+                        <a class="page-link border-0 px-3 py-2.5 bg-white text-dark" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                            <i class="bi bi-chevron-right small"></i>
                         </a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{page_obj.paginator.num_pages}}" aria-label="Last">
-                            <span aria-hidden="true">last &raquo;</span>
+                        <a class="page-link border-0 px-3 py-2.5 bg-white text-dark" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                            <i class="bi bi-chevron-double-right small"></i>
                         </a>
                     </li>
                     {% endif %}
