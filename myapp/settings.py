@@ -166,7 +166,15 @@ EMAIL_HOST_PASSWORD='90555157957b0c'
 
 import os
 
-MEDIA_URL='/media/'
-MEDIA_ROOT=os.path.join(BASE_DIR,'media')
+# Media files configuration
+MEDIA_URL = '/media/'
+
+# Dynamic Media Root configuration for Render
+if os.environ.get('RENDER'):
+    # Points to the persistent disk storage path mounted on Render
+    MEDIA_ROOT = '/data/media'
+else:
+    # Points to your local computer's directory for local development
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 LOGIN_URL='/login'
